@@ -133,6 +133,11 @@ const App: React.FC = () => {
     setActiveId(null);
   };
 
+  const handleClearAllCandidates = () => {
+    setCandidates([]);
+    setActiveId(null);
+  };
+
   const handleSaveAndNew = async () => {
     setShowToast(true);
     if (syncConfig.enabled) await performSync();
@@ -195,7 +200,11 @@ const App: React.FC = () => {
 
       <main className="flex-1 overflow-hidden p-6">
         {isStatsViewOpen ? (
-          <StatisticsView candidates={candidates} onDeleteGroup={handleDeleteGroup} />
+          <StatisticsView 
+            candidates={candidates} 
+            onDeleteGroup={handleDeleteGroup} 
+            onClearAll={handleClearAllCandidates}
+          />
         ) : isAdminViewOpen ? (
           <AdminPanel 
             judges={judges} 
