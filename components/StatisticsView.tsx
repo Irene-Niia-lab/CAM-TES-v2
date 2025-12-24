@@ -83,7 +83,12 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ candidates, onDeleteGro
       const lastRecord = g.records[g.records.length - 1];
       if (!editedNames[g.idCode]) initialNames[g.idCode] = lastRecord.name || '';
       if (!editedEnNames[g.idCode]) initialEnNames[g.idCode] = lastRecord.enName || '';
-      if (!editedOrgs[g.idCode]) initialOrgs[g.idCode] = lastRecord.organization || '';
+      
+      // 优化机构名称保留逻辑：搜索所有记录，取第一个不为空的机构名称作为默认值
+      if (!editedOrgs[g.idCode]) {
+        const firstNonEmptyOrg = g.records.find(r => r.organization && r.organization.trim() !== '')?.organization || '';
+        initialOrgs[g.idCode] = firstNonEmptyOrg;
+      }
     });
 
     if (Object.keys(initialFeedbacks).length > 0) setEditedFeedbacks(p => ({ ...initialFeedbacks, ...p }));
@@ -97,7 +102,6 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ candidates, onDeleteGro
   const getAggregatedTotal = (idCode: string) => {
     const scores = editedAvgScores[idCode];
     if (!scores) return "0.0";
-    // Fix: Explicitly cast values to number array to ensure types for reduce operation to avoid 'unknown' type issues
     const total = (Object.values(scores) as number[]).reduce((a, b) => a + b, 0);
     return total.toFixed(1);
   };
@@ -111,7 +115,7 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ candidates, onDeleteGro
       group.idCode,
       editedNames[group.idCode] || group.name,
       editedEnNames[group.idCode] || group.enName,
-      editedOrgs[group.idCode] || group.records[0]?.organization || '',
+      editedOrgs[group.idCode] || '', // 使用编辑后的机构名
       group.records[0]?.group || '?',
       group.records[0]?.groupIndex || '?',
       group.records[0]?.category || 'PU0',
@@ -278,7 +282,13 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ candidates, onDeleteGro
                               </div>
                               <div className="space-y-2">
                                 <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">修正机构</label>
-                                <input type="text" value={editedOrgs[id] || ''} onChange={(e) => setEditedOrgs(p => ({...p, [id]: e.target.value}))} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-bold" />
+                                <input 
+                                  type="text" 
+                                  placeholder="未填写机构"
+                                  value={editedOrgs[id] || ''} 
+                                  onChange={(e) => setEditedOrgs(p => ({...p, [id]: e.target.value}))} 
+                                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-bold" 
+                                />
                               </div>
                             </div>
 
